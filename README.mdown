@@ -1,0 +1,46 @@
+C, Objective-C, and Cocoa on the command line
+=============================================
+
+Sometimes there’s just one tiny snippet of Cocoa code that you want to test — maybe to find out the output of NSDateFormatter for various cases, testing out some text replacement routine, or testing out some image drawing code.
+
+It’s often too much trouble to create a new XCode project and set up the framework to do one simple test, which is why I put together this little shell script that lets you run Cocoa code from the command line:
+
+
+
+You have full access to all Cocoa libraries, and in iOS mode access to most iOS stuff too, straight from the command line.
+
+Usage
+-----
+
+### runcocoa.sh
+
+You can invoke it either by specifying the code to execute on the command line as a parameter, or through standard input, so you can pipe stuff to it. This is particularly convenient for use with TextMate: Type some code, hit Cmd-Option-R, type “runcocoa”, hit enter, and the result appears as a tooltip.
+
+You can include other frameworks (use “-include AudioToolbox/AudioToolbox.h -framework AudioToolbox" as command line arguments, for example), and run the code in gdb (with -gdb as a command-line argument).
+
+You can also run it as iOS code by supplying the -ios commandline parameter.
+
+Any other libraries to link in can be specified — command line arguments will be passed on unmolested to GCC. Add #imports with the -include parameter.
+
+### runc.sh
+
+This is much simpler than runcocoa.sh, and useful for quickly running little C snippets without the time-consuming linkage of the Cocoa libraries.  Again, pass the code via the command line, or standard input.
+
+Installation
+------------
+
+Make the scripts executable (`chmod +x runcocoa.sh runc.sh`), and copy them to `/usr/local/bin`.
+
+
+Examples
+--------
+
+This prints out a formatted version of the date, using NSDateFormatter:
+
+    $ runcocoa 'NSDateFormatter *formatter = [[[NSDateFormatter alloc] init] autorelease]; [formatter setDateFormat:@"d MMM, h:mm a"]; NSLog(@"%@", [formatter stringFromDate:[NSDate date]]);'
+
+    2011-02-23 20:02:10.313 runcocoa-output[28025:903] 23 Feb, 8:02 PM
+
+This creates an image compositing A Tasty Pixel's favicon onto a white circle, and saves it to output.png in the current directory using iOS's UIGraphicsBeginImageContext utility:
+
+    runcocoa -ios 'UIGraphicsBeginImageContext(CGSizeMake(100,100)); CGContextRef ctx = UIGraphicsGetCurrentContext(); CGContextSetFillColorWithColor(ctx,[[UIColor whiteColor] CGColor]); CGContextBeginPath(ctx); CGContextMoveToPoint(ctx, 50, 0); CGContextAddArc(ctx, 50, 50, 50, M_PI/2.0, M_PI/2.0 + (2*M_PI), 0); CGContextFillPath(ctx); UIImage *icon = [UIImage imageWithData:[NSData dataWithContentsOfURL:[NSURL URLWithString:@"http://atastypixel.com/favicon.ico"]]]; [icon drawAtPoint:CGPointMake((100-[icon size].width)/2.0,(100-[icon size].height)/2.0)]; UIImage *i = UIGraphicsGetImageFromCurrentImageContext(); UIGraphicsEndImageContext(); [UIImagePNGRepresentation(i) writeToFile:@"output.png" atomically:NO];'; open output.png;
