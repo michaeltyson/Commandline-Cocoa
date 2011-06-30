@@ -7,6 +7,7 @@ ccflags="";
 includes="";
 usegdb=;
 ios=;
+includemain=yes;
 while [ "${1:0:1}" = "-" ]; do
     if [ "$1" = "-include" ]; then
         shift;
@@ -16,6 +17,8 @@ while [ "${1:0:1}" = "-" ]; do
         usegdb=yes;
     elif [ "$1" = "-ios" ]; then
         ios=yes;
+    elif [ "$1" = "-nomain" ]; then
+        includemain=;
     else
         ccflags="$ccflags $1 $2";
         shift;
@@ -37,6 +40,7 @@ else
 #import <Cocoa/Cocoa.h>";
 fi
 
+if [ "$includemain" ]; then
 cat > /tmp/runcocoa.m << EOF
 $includes
 int main (int argc, const char * argv[]) {
@@ -46,7 +50,12 @@ int main (int argc, const char * argv[]) {
   return 0;
 }
 EOF
-
+else
+cat > /tmp/runcocoa.m << EOF
+$includes
+$commands;
+EOF
+fi
 
 if [ "$ios" ]; then
     export MACOSX_DEPLOYMENT_TARGET=10.6

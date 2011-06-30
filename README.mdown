@@ -22,6 +22,8 @@ You can also run it as iOS code by supplying the -ios commandline parameter.
 
 Any other libraries to link in can be specified — command line arguments will be passed on unmolested to GCC. Add #imports with the -include parameter.
 
+Normally, all code is wrapped in a standard main routine.  To add classes and do more advanced things, add the -nomain parameter, and add your own main routine.
+
 ### runc.sh
 
 This is much simpler than runcocoa.sh, and useful for quickly running little C snippets without the time-consuming linkage of the Cocoa libraries.  Again, pass the code via the command line, or standard input.
